@@ -102,3 +102,84 @@ public class Minimax {
         game.printBoard(); // Verify initialization
     }
 }
+
+// Place a move on the board
+public boolean makeMove(int bigRow, int bigCol, int smallCell, char player) {
+    if (bigRow < 0 || bigRow >= 3 || bigCol < 0 || bigCol >= 3 || smallCell < 0 || smallCell >= 9) {
+        System.out.println("Invalid move: Out of bounds.");
+        return false;
+    }
+    if (board[bigRow][bigCol][smallCell] != '-') {
+        System.out.println("Invalid move: Cell already occupied.");
+        return false;
+    }
+    board[bigRow][bigCol][smallCell] = player;
+    return true;
+}
+
+// Find the best move for the computer
+public int[] findBestMove() {
+    int bestScore = Integer.MIN_VALUE;
+    int[] bestMove = new int[3]; // [bigRow, bigCol, smallCell]
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            for (int k = 0; k < 9; k++) {
+                if (board[i][j][k] == '-') { // If the cell is empty
+                    board[i][j][k] = 'X'; // Simulate the computer's move
+                    int score = minimax(false); // Evaluate the move
+                    board[i][j][k] = '-'; // Undo the move
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove[0] = i;
+                        bestMove[1] = j;
+                        bestMove[2] = k;
+                    }
+                }
+            }
+        }
+    }
+    return bestMove;
+}
+
+import java.util.Scanner;
+
+public static void main(String[] args) {
+    Minimax game = new Minimax();
+    Scanner scanner = new Scanner(System.in);
+    boolean isPlayerTurn = true;
+
+    System.out.println("Welcome to Ultimate Tic Tac Toe!");
+    game.printBoard();
+
+    while (true) {
+        if (game.isDraw()) {
+            System.out.println("It's a draw!");
+            break;
+        }
+
+        if (isPlayerTurn) {
+            // Player's turn
+            System.out.println("Your turn (O). Enter your move as 'bigRow bigCol smallCell':");
+            int bigRow = scanner.nextInt();
+            int bigCol = scanner.nextInt();
+            int smallCell = scanner.nextInt();
+
+            if (game.makeMove(bigRow, bigCol, smallCell, 'O')) {
+                isPlayerTurn = false;
+                game.printBoard();
+            } else {
+                System.out.println("Invalid move. Try again.");
+            }
+        } else {
+            // Computer's turn
+            System.out.println("Computer's turn (X):");
+            int[] bestMove = game.findBestMove();
+            game.makeMove(bestMove[0], bestMove[1], bestMove[2], 'X');
+            isPlayerTurn = true;
+            game.printBoard();
+        }
+    }
+
+    scanner.close();
+}
